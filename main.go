@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -36,6 +37,25 @@ type Todo struct {
 	ID     uint   `json:"id" gorm:"primaryKey"`
 	Title  string `json:"title"`
 	Status string `json:"status"`
+	Deadline string `json:"deadline"`
+	Weather string `json:"weather"`
+	Project string `json:"project"`
+}
+
+// モック用のAPI関数
+func fetchCalendarAPI() (string, error) {
+	time.Sleep(2 * time.Second) // 遅延をシミュレート
+	return "2024-09-30", nil
+}
+
+func fetchWeatherAPI() (string, error) {
+	time.Sleep(1 * time.Second) // 遅延をシミュレート
+	return "Sunny", nil
+}
+
+func fetchProjectAPI() (string, error) {
+	time.Sleep(3 * time.Second) // 遅延をシミュレート
+	return "Project X", nil
 }
 
 func createTodo(c *gin.Context) {
@@ -46,6 +66,56 @@ func createTodo(c *gin.Context) {
 	}
 	db.Create(&todo)
 	c.JSON(http.StatusOK, todo)
+}
+
+func createTodoByAPI(w http.ResponseWriter, r *http.Request) {
+	var wg sync.WaitGroup
+	todo := &ToDO {
+		Title: "New Task",
+		Status: "pending"
+	}
+
+	wg.Add(3)
+
+	// 	•	無名関数の()には引数を渡すことができ、引数を受け取るように定義して、その場で値を渡して実行できます。
+	// 	•	**ifブロックの最後の()**は、関数呼び出しを示している場合が多く、無名関数をその場で定義してすぐに実行していることを意味します。
+	go func() {
+		defer wg.Done()
+		deadline, err :- fetchCalendarAPI()
+		if err != nil {
+			log.Println("Error fetching API:", err)
+			return
+		}
+		todo.Deadline = deadline
+	}()
+
+	go func(){
+		defer wg.Done()
+		weather, err := fetchWeatherAPI()
+		if err != nil {
+			log.Println("Error fetching weather API:", err)
+			return
+		}
+		todo.Weather = weather
+	}()
+
+
+	go func() {
+		defer wg.Done()
+		project, err := fetchProjectAPI()
+		if err != nill{
+			log.Println("Error fetching project API:", err) 
+				return
+			todo.Project = project
+		}()
+	}
+	// 全てのゴルーチンの完了を待機
+
+	wg.Wait()
+	// ToDoをレスポンスとして返す
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(todo)
 }
 
 func getTodos(c *gin.Context) {
