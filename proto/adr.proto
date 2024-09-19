@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+service ADRService {
+    rpc AnalyzeADR (ADRRequest) returns (ADRResponse);
+}
+
+message ADRRequest {
+    string adr = 1;
+}
+
+message ADRResponse {
+    string result = 1;
+}
