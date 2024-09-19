@@ -2,12 +2,13 @@ package main
 
 import (
 	"log"
-	"project-root/api"
-	"project-root/aws"
+
+	"go-todo/api"
+	"go-todo/aws"
 )
 
 func main() {
 	go api.StartGRPCServer()
 	aws.ScheduleADRAnalysis()
-	log.Println("Service is runnning...")
+	log.Println("Service is running...")
 }

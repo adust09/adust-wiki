@@ -1,5 +1,8 @@
 syntax = "proto3";
 
+package proto;
+option go_package = "proto/adr";
+
 service ADRService {
     rpc AnalyzeADR (ADRRequest) returns (ADRResponse);
 }

@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	pb "path/to/protobufs"
+	pb "go-todo/proto/adr"
 
 	"google.golang.org/grpc"
 )

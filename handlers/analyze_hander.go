@@ -3,10 +3,9 @@ package handlers
 import (
 	"sync"
 
-	"github.com/adust08/go-todo/api"
+	"go-todo/api"
 )
 
-// 複数のADRを並列で処理する関数
 func AnalyzeADRsParallel(adrs []string, openAIKey string) []string {
 	var wg sync.WaitGroup
 	results := make([]string, len(adrs))

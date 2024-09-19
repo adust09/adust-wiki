@@ -8,7 +8,6 @@ import (
 	"os"
 )
 
-// Notion APIを使ってADRを取得
 func FetchADRFromNotion(apiKey string, databaseID string) (string, error) {
 
 	notionAPIURL := os.Getenv("NOTION_API_URL")

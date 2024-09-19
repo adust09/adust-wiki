@@ -5,12 +5,13 @@ import (
 	"log"
 	"time"
 
-	pb "path/to/protobufs"
+	pb "go-todo/proto/adr"
 
 	"google.golang.org/grpc"
 )
 
 func main() {
+	// gRPCサーバーに接続
 	conn, err := grpc.Dial(":50051", grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
@@ -18,13 +19,19 @@ func main() {
 	defer conn.Close()
 
 	client := pb.NewADRServiceClient(conn)
+
+	// リクエストを作成
+	req := &pb.ADRRequest{Adr: "Sample ADR Data"}
+
+	// サーバーへリクエストを送信
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	req := &pb.ADRRequest{Adr: "Sample ADR Data"}
 	res, err := client.AnalyzeADR(ctx, req)
 	if err != nil {
-		log.Fatalf("Could not analyze ADR: %v", err)
+		log.Fatalf("Error during request: %v", err)
 	}
-	log.Printf("ADR Analysis Result: %s", res.Result)
+
+	// 結果を表示
+	log.Printf("Response from server: %s", res.GetResult())
 }
