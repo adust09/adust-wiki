@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func main() {
+func client() {
 	// gRPCサーバーに接続
 	conn, err := grpc.Dial(":50051", grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {

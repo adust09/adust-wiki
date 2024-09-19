@@ -22,3 +22,12 @@ func AnalyzeADRsParallel(adrs []string, openAIKey string) []string {
 	wg.Wait()
 	return results
 }
+
+func ScheduleADRAnalysis() {
+	adrs, _ := api.FetchADRFromNotion("your-notion-api-key", "database-id")
+	results := AnalyzeADRsParallel(adrs, "your-openai-api-key")
+
+	for _, result := range results {
+		// Save result to Notion
+	}
+}
