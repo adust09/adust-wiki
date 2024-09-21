@@ -1,4 +1,5 @@
-package main
+// internal/github/client.go
+package github
 
 import (
 	"fmt"
@@ -7,7 +8,7 @@ import (
 	"os"
 )
 
-func getFileFromGitHub(repo, path string) ([]byte, error) {
+func GetFileFromGitHub(repo, path string) ([]byte, error) {
 	githubToken := os.Getenv("GITHUB_TOKEN")
 	if githubToken == "" {
 		return nil, fmt.Errorf("GITHUB_TOKEN is not set")
@@ -33,13 +34,4 @@ func getFileFromGitHub(repo, path string) ([]byte, error) {
 	}
 
 	return ioutil.ReadAll(resp.Body)
-}
-
-func main() {
-	content, err := getFileFromGitHub("username/repo", "path/to/file.md")
-	if err != nil {
-		fmt.Println("Error fetching file:", err)
-		return
-	}
-	fmt.Println("File content:", string(content))
 }

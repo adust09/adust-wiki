@@ -1,4 +1,5 @@
-package main
+// internal/db/db.go
+package db
 
 import (
 	"gorm.io/driver/postgres"
@@ -13,16 +14,17 @@ type Article struct {
 	Date    string
 }
 
-func main() {
+func ConnectDB() (*gorm.DB, error) {
 	dsn := "host=localhost user=youruser password=yourpassword dbname=yourdb port=5432 sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("failed to connect database")
+		return nil, err
 	}
 
 	db.AutoMigrate(&Article{})
+	return db, nil
+}
 
-	article := Article{Title: "サンプル記事", Content: "この記事の内容", Tags: []string{"Go", "AWS"}, Date: "2024-09-20"}
-	db.Create(&article)
-
+func SaveArticle(db *gorm.DB, article *Article) error {
+	return db.Create(article).Error
 }
