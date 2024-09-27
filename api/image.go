@@ -9,18 +9,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// S3バケット名
 var bucketName = "your-s3-bucket-name"
 
-// 画像アップロード処理
-func uploadImage(c *gin.Context) {
+func ploadImage(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
 		return
 	}
 
-	// S3へのアップロード処理
 	src, err := file.Open()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file"})

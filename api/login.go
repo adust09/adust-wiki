@@ -8,16 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ログインリクエストの構造体
 type LoginRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }
 
-// JWTシークレットキー
 var jwtSecret = []byte("your-secret-key")
 
-// JWTトークン生成関数
 func generateJWT(userId string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"userId": userId,
@@ -26,7 +23,6 @@ func generateJWT(userId string) (string, error) {
 	return token.SignedString(jwtSecret)
 }
 
-// ログイン処理
 func login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -34,11 +30,8 @@ func login(c *gin.Context) {
 		return
 	}
 
-	// メールとパスワードを照合し、ユーザー認証を行う処理を実装
-	// 仮に認証が成功したとする
-	userId := "sample-user-id" // 実際にはデータベースから取得するユーザーID
+	userId := "sample-user-id"
 
-	// JWTトークンを生成
 	token, err := generateJWT(userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
