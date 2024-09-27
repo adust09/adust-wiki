@@ -12,7 +12,7 @@ import (
 
 func TestLoginSuccess(t *testing.T) {
 	router := gin.Default()
-	router.POST("/api/login", login)
+	router.POST("/api/login", Login)
 
 	requestBody := `{
 		"email": "test@example.com",
@@ -33,7 +33,7 @@ func TestLoginSuccess(t *testing.T) {
 
 func TetLoginInvalidEmail(t *testing.T) {
 	router := gin.Default()
-	router.POST("/api/login", login)
+	router.POST("/api/login", Login)
 
 	requestBody := `{
 		"email": "invalid-email",
@@ -52,7 +52,7 @@ func TetLoginInvalidEmail(t *testing.T) {
 
 func TestLoginMissingPassword(t *testing.T) {
 	router := gin.Default()
-	router.POST("/api/login", login)
+	router.POST("/api/login", Login)
 
 	requestBody := `{
 		"email": "test@example.com"

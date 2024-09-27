@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go-todo/api"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,15 +18,13 @@ func main() {
 
 	authRoutes := r.Group("/api")
 	{
-		authRoutes.POST("/register", register)
-		authRoutes.POST("/login", login)
+		authRoutes.POST("/register", api.Register)
+		authRoutes.POST("/login", api.Login)
 	}
 
 	imageRoutes := r.Group("/api")
 	{
-		imageRoutes.POST("/upload", uploadImage)
-		imageRoutes.GET("/images", listImages)
-		imageRoutes.GET("/images/:imageId", downloadImage)
+		imageRoutes.POST("/upload", api.UploadImage)
 	}
 
 	r.Run(":8080")

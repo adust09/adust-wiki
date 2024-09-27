@@ -12,7 +12,7 @@ import (
 
 func TestRegister(t *testing.T) {
 	router := gin.Default()
-	router.POST("/api/register", register)
+	router.POST("/api/register", Register)
 
 	requestBody := `{
         "username": "testuser",

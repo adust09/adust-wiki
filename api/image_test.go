@@ -13,7 +13,7 @@ import (
 
 func TestUploadImage(t *testing.T) {
 	router := gin.Default()
-	router.POST("/api/upload", uploadImage)
+	router.POST("/api/upload", UploadImage)
 
 	fileContent := []byte("This is a test image")
 	reqBody := new(bytes.Buffer)
