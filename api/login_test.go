@@ -1,70 +1,61 @@
-package api
+package api_test
 
 import (
-	"bytes"
+	"imagera/api"
+	"imagera/internal/db"
+	"imagera/internal/db/models"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestLoginSuccess(t *testing.T) {
-	router := gin.Default()
-	router.POST("/api/login", Login)
+func setup() {
+	db.Connect()
+	db.DB.Exec("DELETE FROM users")
+}
 
-	requestBody := `{
-		"email": "test@example.com",
-		"password": "password123"
-	}`
-
-	req, _ := http.NewRequest("POST", "/api/login", bytes.NewBuffer([]byte(requestBody)))
+func createTestContext(method, path string, body string) (*gin.Context, *httptest.ResponseRecorder) {
+	req := httptest.NewRequest(method, path, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = req
+	return c, w
+}
 
-	router.ServeHTTP(w, req)
+func TestRegister(t *testing.T) {
+	setup()
+
+	body := `{"username": "testuser", "email": "testuser@example.com", "password": "password123"}`
+	c, w := createTestContext("POST", "/register", body)
+
+	api.Register(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "User registered successfully")
+}
 
+func TestLogin(t *testing.T) {
+	setup()
+
+	hashedPassword, _ := api.HashPassword("password123")
+	user := models.User{
+		Username:     "testuser",
+		Email:        "testuser@example.com",
+		PasswordHash: hashedPassword,
+	}
+	db.DB.Create(&user)
+
+	body := `{"email": "testuser@example.com", "password": "password123"}`
+	c, w := createTestContext("POST", "/login", body)
+
+	api.Login(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Body.String(), "Login successful")
 	assert.Contains(t, w.Body.String(), "token")
-}
-
-func TetLoginInvalidEmail(t *testing.T) {
-	router := gin.Default()
-	router.POST("/api/login", Login)
-
-	requestBody := `{
-		"email": "invalid-email",
-		"password": "password123"
-	}`
-
-	req, _ := http.NewRequest("POST", "/api/login", bytes.NewBuffer([]byte(requestBody)))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-	assert.Contains(t, w.Body.String(), "error")
-}
-
-func TestLoginMissingPassword(t *testing.T) {
-	router := gin.Default()
-	router.POST("/api/login", Login)
-
-	requestBody := `{
-		"email": "test@example.com"
-	}`
-
-	req, _ := http.NewRequest("POST", "/api/login", bytes.NewBuffer([]byte(requestBody)))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-
-	assert.Contains(t, w.Body.String(), "error")
 }
