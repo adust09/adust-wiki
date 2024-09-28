@@ -1,13 +1,22 @@
 package main
 
 import (
-	"go-todo/api"
+	"imagera/api"
+	"imagera/internal/db"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	err := db.Connect()
+	if err != nil {
+		log.Fatalf("Could not connect to database: %v", err)
+	}
+	db.Migrate()
+
+	log.Println("Application started successfully")
 	r := gin.Default()
 
 	r.GET("/health", func(c *gin.Context) {

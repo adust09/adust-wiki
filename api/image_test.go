@@ -47,7 +47,7 @@ func TestListImages(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	// レスポンスにダミーの画像URLが含まれていることを確認
-	assert.Contains(t, w.Body.String(), "go-todo-images.s3.amazonaws.com/image1.png")
+	assert.Contains(t, w.Body.String(), "imagera-images.s3.amazonaws.com/image1.png")
 }
 
 func TestDownloadImage(t *testing.T) {
@@ -65,5 +65,5 @@ func TestDownloadImage(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	// 正しいS3 URLが生成されていることを確認
-	assert.Contains(t, w.Body.String(), "https://go-todo-images.s3.amazonaws.com/testimage.png")
+	assert.Contains(t, w.Body.String(), "https://imagera-images.s3.amazonaws.com/testimage.png")
 }
