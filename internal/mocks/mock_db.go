@@ -34,6 +34,24 @@ func (m *MockDatabase) EXPECT() *MockDatabaseMockRecorder {
 	return m.recorder
 }
 
+// AutoMigrate mocks base method.
+func (m *MockDatabase) AutoMigrate(models ...interface{}) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range models {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "AutoMigrate", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AutoMigrate indicates an expected call of AutoMigrate.
+func (mr *MockDatabaseMockRecorder) AutoMigrate(models ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AutoMigrate", reflect.TypeOf((*MockDatabase)(nil).AutoMigrate), models...)
+}
+
 // Connect mocks base method.
 func (m *MockDatabase) Connect() (*gorm.DB, error) {
 	m.ctrl.T.Helper()

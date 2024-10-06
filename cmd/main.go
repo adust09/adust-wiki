@@ -11,11 +11,12 @@ import (
 
 func main() {
 	database := &db.GormDB{}
-	conn, err := database.Connect()
+
+	_, err := database.Connect()
 	if err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
-	db.Migrate(conn)
+	db.Migrate()
 
 	log.Println("Application started successfully")
 	r := gin.Default()
