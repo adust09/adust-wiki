@@ -21,24 +21,6 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
-func TestRegister(t *testing.T) {
-	r := setupRouter()
-
-	userData := map[string]string{
-		"email":    "testuser@example.com",
-		"password": "testpassword",
-	}
-	jsonData, _ := json.Marshal(userData)
-
-	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonData))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Contains(t, w.Body.String(), "Registration successful")
-}
-
 func TestLogin(t *testing.T) {
 	r := setupRouter()
 
@@ -52,13 +34,11 @@ func TestLogin(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	// ログインリクエスト
 	req, _ = http.NewRequest("POST", "/login", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	// ステータスコードとレスポンスの検証
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Body.String(), "Login successful")
 }

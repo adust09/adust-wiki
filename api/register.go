@@ -14,6 +14,7 @@ var req struct {
 	Password string `json:"password" binding:"required"`
 }
 
+// todo: auto login
 func Register(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -35,11 +36,6 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register user"})
 		return
 	}
-
-	session, _ := store.Get(c.Request, "session-name")
-	session.Values["authenticated"] = true
-	session.Values["username"] = req.Email
-	session.Save(c.Request, c.Writer)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Registration successful"})
 }
