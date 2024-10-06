@@ -17,6 +17,11 @@ var req struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type LoginRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+}
+
 func Register(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -47,48 +52,34 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Registration successful"})
 }
 
-// LoginRequest - ログインリクエスト用の構造体
-type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
-
-// Login - ログイン処理
 func Login(c *gin.Context) {
-	// セッションを取得
 	session, _ := store.Get(c.Request, "session-name")
 
 	var req LoginRequest
 
-	// リクエストバリデーション
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// メールアドレスでユーザーをデータベースから検索
 	var user models.User
 	if err := db.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
-	// パスワードを照合
 	if !checkPasswordHash(req.Password, user.PasswordHash) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
-	// セッションに認証情報を追加
 	session.Values["authenticated"] = true
 	session.Values["username"] = user.Email
 	session.Save(c.Request, c.Writer)
 
-	// ログイン成功レスポンス
 	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
 }
 
-// パスワードを検証する関数
 func checkPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
