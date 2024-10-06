@@ -1,38 +1,20 @@
 package api
 
 import (
-	"imagera/internal/db"
-	"imagera/internal/db/models"
+	"database/sql"
 	"net/http"
-	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtSecret = []byte("your-secret-key")
+var store = sessions.NewCookieStore([]byte("secret-key"))
 
-type RegisterRequest struct {
-	Username string `json:"username" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
-type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
+var db *sql.DB
 
-func generateJWT(userId string) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userId": userId,
-		"exp":    time.Now().Add(time.Hour * 72).Unix(),
-	})
-	return token.SignedString(jwtSecret)
-}
-
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
 }
 
@@ -42,55 +24,79 @@ func checkPasswordHash(password, hash string) bool {
 }
 
 func Register(c *gin.Context) {
-	var req RegisterRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var req struct {
+		Email    string `json:"email" binding:"required,email"`
+		Password string `json:"password" binding:"required"`
 	}
 
-	hashedpassword, err := HashPassword(req.Password)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	passwordHash, err := hashPassword(req.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
 		return
 	}
 
-	user := models.User{
-		Username:     req.Username,
-		Email:        req.Email,
-		PasswordHash: hashedpassword,
-	}
-	if err := db.DB.Create(&user).Error; err != nil {
+	_, err = db.Exec("INSERT INTO users (email, password_hash) VALUES ($1, $2)", req.Email, passwordHash)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register user"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
+	session, _ := store.Get(c.Request, "session-name")
+	session.Values["authenticated"] = true
+	session.Values["username"] = req.Email
+	session.Save(c.Request, c.Writer)
+
+	c.JSON(http.StatusOK, gin.H{"message": "Registration successful"})
 }
 
 func Login(c *gin.Context) {
-	var req LoginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	session, _ := store.Get(c.Request, "session-name")
+
+	var username, password string
+	if err := c.Bind(&gin.H{"username": &username, "password": &password}); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
-	var user models.User
-	if err := db.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email"})
+	if username == "user" && password == "password" {
+		session.Values["authenticated"] = true
+		session.Values["username"] = username
+		session.Save(c.Request, c.Writer)
+		c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
+	} else {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 	}
+}
 
-	if !checkPasswordHash(req.Password, user.PasswordHash) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
-		return
+func Logout(c *gin.Context) {
+	session, _ := store.Get(c.Request, "session-name")
+
+	session.Options.MaxAge = -1
+	session.Save(c.Request, c.Writer)
+	c.JSON(http.StatusOK, gin.H{"message": "Logout successful"})
+}
+
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		session, _ := store.Get(c.Request, "session-name")
+
+		if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			c.Abort()
+			return
+		}
+
+		c.Next()
 	}
+}
 
-	token, err := generateJWT(user.ID.String())
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Login successful",
-		"token":   token,
-	})
+func Dashboard(c *gin.Context) {
+	session, _ := store.Get(c.Request, "session-name")
+	username := session.Values["username"].(string)
+	c.JSON(http.StatusOK, gin.H{"message": "Welcome to your dashboard, " + username})
 }

@@ -29,6 +29,9 @@ func main() {
 	{
 		authRoutes.POST("/register", api.Register)
 		authRoutes.POST("/login", api.Login)
+		authRoutes.POST("/logout", api.Logout)
+		// authRoutes.GET("/dashboard", AuthMiddleware(), Dashboard)
+
 	}
 
 	imageRoutes := r.Group("/api")

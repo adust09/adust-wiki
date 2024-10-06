@@ -1,6 +1,6 @@
 module imagera
 
-go 1.21.0
+go 1.23
 
 toolchain go1.23.1
 
@@ -10,6 +10,8 @@ require (
 	github.com/aws/aws-sdk-go v1.55.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/mock v1.6.0 // indirect
+	github.com/gorilla/securecookie v1.1.2 // indirect
+	github.com/gorilla/sessions v1.4.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sendgrid/rest v2.6.9+incompatible // indirect
