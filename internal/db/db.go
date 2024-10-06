@@ -10,16 +10,11 @@ import (
 	"gorm.io/gorm"
 )
 
+// グローバル変数としてgorm.DBを保持
 var DB *gorm.DB
 
-type Database interface {
-	Connect() (*gorm.DB, error)
-	AutoMigrate(models ...interface{}) error
-}
-
-type GormDB struct{}
-
-func (g *GormDB) Connect() (*gorm.DB, error) {
+// Connect - PostgreSQLデータベースに接続
+func Connect() error {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		os.Getenv("DB_HOST"),
 		os.Getenv("DB_USER"),
@@ -28,9 +23,16 @@ func (g *GormDB) Connect() (*gorm.DB, error) {
 		os.Getenv("DB_PORT"),
 	)
 
-	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	var err error
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %w", err)
+	}
+	log.Println("Successfully connected to PostgreSQL database")
+	return nil
 }
 
+// Migrate - テーブルのマイグレーションを実行
 func Migrate() {
 	err := DB.AutoMigrate(&models.User{}, &models.Image{})
 	if err != nil {

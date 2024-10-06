@@ -1,41 +1,38 @@
 package db_test
 
 import (
-	"errors"
+	"imagera/internal/db"
+	"os"
 	"testing"
 
-	"imagera/internal/mocks"
-
-	"github.com/golang/mock/gomock"
+	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
 
-func TestConnect_Success(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockDB := mocks.NewMockDatabase(ctrl)
-
-	mockDB.EXPECT().Connect().Return(&gorm.DB{}, nil)
-
-	db, err := mockDB.Connect()
-
-	assert.NoError(t, err)
-	assert.NotNil(t, db)
+func setupPostgresEnv() {
+	os.Setenv("DB_HOST", "localhost")
+	os.Setenv("DB_USER", "testuser")
+	os.Setenv("DB_PASSWORD", "testpassword")
+	os.Setenv("DB_NAME", "testdb")
+	os.Setenv("DB_PORT", "5432")
 }
 
-func TestConnect_Failure(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+func TestConnect_Success(t *testing.T) {
+	setupPostgresEnv()
 
-	mockDB := mocks.NewMockDatabase(ctrl)
+	err := db.Connect()
 
-	mockDB.EXPECT().Connect().Return(nil, errors.New("failed to connect to database"))
+	assert.NoError(t, err)
+	assert.NotNil(t, db.DB) // db.DBがnilでないことを確認
+}
 
-	db, err := mockDB.Connect()
+func TestMigrate_Success(t *testing.T) {
+	setupPostgresEnv()
 
-	assert.Error(t, err)
-	assert.Nil(t, db)
-	assert.Equal(t, "failed to connect to database", err.Error())
+	err := db.Connect()
+	assert.NoError(t, err)
+
+	db.Migrate()
+
+	assert.NotNil(t, db.DB) // db.DBがnilでないことを確認
 }

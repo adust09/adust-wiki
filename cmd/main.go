@@ -7,46 +7,35 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-type App struct {
-	DB *gorm.DB
-}
-
-func (app *App) Register(c *gin.Context) {
-	api.Register(c)
-}
-
-func (app *App) Login(c *gin.Context) {
-	api.Login(c)
-}
-
-func (app *App) Dashboard(c *gin.Context) {
-	api.Dashboard(c)
-}
-
 func main() {
-	database := &db.GormDB{}
-	conn, err := database.Connect()
+	// データベースに接続
+	err := db.Connect() // これでグローバル変数DBに接続情報がセットされる
 	if err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
 
-	app := &App{DB: conn}
+	// マイグレーションを実行
+	db.Migrate()
 
+	// Ginのデフォルトルーターを作成
 	r := gin.Default()
 
+	// APIのヘルスチェックエンドポイント
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "API is up and running!"})
 	})
 
+	// 認証系のルートグループ
 	authRoutes := r.Group("/api")
 	{
-		authRoutes.POST("/register", app.Register)
-		authRoutes.POST("/login", app.Login)
-		authRoutes.GET("/dashboard", app.Dashboard)
+		// それぞれのエンドポイントでRegister, Login, Dashboardを呼び出し
+		authRoutes.POST("/register", api.Register)
+		authRoutes.POST("/login", api.Login)
+		authRoutes.GET("/dashboard", api.Dashboard)
 	}
 
+	// サーバーを8080ポートで起動
 	r.Run(":8080")
 }
