@@ -21,6 +21,6 @@ func imagera(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User imageraed successfully",
-		"userId":  "sample-user-id", // 実際には生成されたユーザーIDを返す
+		"userId":  "sample-user-id",
 	})
 }
