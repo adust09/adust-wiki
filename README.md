@@ -35,7 +35,7 @@ DB_PORT=5432
 
 Use Docker Compose to build the containers for PostgreSQL and the Golang application.
 ```
-docker-compose up --build
+docker compose up --build
 ```
 This command will:
 

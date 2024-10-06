@@ -12,8 +12,8 @@ type User struct {
 	Username            string    `gorm:"size:100;not null;unique"`
 	Email               string    `gorm:"size:100;not null;unique"`
 	PasswordHash        string    `gorm:"not null"`
-	PasswordResetToken  string    `gorm:"size:255"` // Field for password reset token
-	PasswordResetExpiry time.Time `gorm:""`         // Field for token expiry time
+	PasswordResetToken  string    `gorm:"size:255"`
+	PasswordResetExpiry time.Time `gorm:""`
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
 }

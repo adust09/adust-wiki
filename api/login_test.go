@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// テスト用のGinエンジンをセットアップ
+// テスト用のルーターセットアップ
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 	r.POST("/register", api.Register)
@@ -22,31 +22,33 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
+// ユーザー登録のテスト
 func TestRegister(t *testing.T) {
 	r := setupRouter()
 
-	// リクエストデータの作成
+	// リクエストデータ作成
 	userData := map[string]string{
 		"email":    "testuser@example.com",
 		"password": "testpassword",
 	}
 	jsonData, _ := json.Marshal(userData)
 
-	// POSTリクエストを送信
+	// POSTリクエスト送信
 	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	// ステータスコードとレスポンスメッセージの検証
+	// ステータスコードとレスポンスの検証
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Body.String(), "Registration successful")
 }
 
+// ログインテスト
 func TestLogin(t *testing.T) {
 	r := setupRouter()
 
-	// まずユーザーを登録する
+	// ユーザー登録
 	userData := map[string]string{
 		"email":    "testuser@example.com",
 		"password": "testpassword",
@@ -63,43 +65,42 @@ func TestLogin(t *testing.T) {
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	// ステータスコードとレスポンスメッセージの検証
+	// ステータスコードとレスポンスの検証
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Body.String(), "Login successful")
 }
 
+// ログアウトのテスト
 func TestLogout(t *testing.T) {
 	r := setupRouter()
 
-	// まずユーザーを登録してログインする
+	// ユーザー登録とログイン
 	userData := map[string]string{
 		"email":    "testuser@example.com",
 		"password": "testpassword",
 	}
 	jsonData, _ := json.Marshal(userData)
-
-	// ユーザー登録
 	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	// ログイン
 	req, _ = http.NewRequest("POST", "/login", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	// ログアウト
+	// ログアウトリクエスト
 	req, _ = http.NewRequest("POST", "/logout", nil)
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	// ステータスコードとレスポンスメッセージの検証
+	// ステータスコードとレスポンスの検証
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Body.String(), "Logout successful")
 }
 
+// 認証なしで保護されたページにアクセスした場合のテスト
 func TestProtectedPageWithoutLogin(t *testing.T) {
 	r := setupRouter()
 
@@ -113,29 +114,27 @@ func TestProtectedPageWithoutLogin(t *testing.T) {
 	assert.Contains(t, w.Body.String(), "Unauthorized")
 }
 
+// 認証済みで保護されたページにアクセスした場合のテスト
 func TestProtectedPageWithLogin(t *testing.T) {
 	r := setupRouter()
 
-	// まずユーザーを登録してログインする
+	// ユーザー登録とログイン
 	userData := map[string]string{
 		"email":    "testuser@example.com",
 		"password": "testpassword",
 	}
 	jsonData, _ := json.Marshal(userData)
-
-	// ユーザー登録
 	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	// ログイン
 	req, _ = http.NewRequest("POST", "/login", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	// 認証済みでダッシュボードにアクセス
+	// 認証済み状態でダッシュボードにアクセス
 	req, _ = http.NewRequest("GET", "/dashboard", nil)
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, req)
